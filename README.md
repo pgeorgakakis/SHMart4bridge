@@ -29,7 +29,7 @@ docker compose up -d --build
 
 ## Configuration
 
-The first step is to configure Keycloak. Please refer to the documentation at (https://www.keycloak.org/archive/documentation-24.0.html). Also refer to Grafana documentation for Keycloack configuration: (https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/).
+The first step is to configure Keycloak. Please refer to the documentation at https://www.keycloak.org/archive/documentation-24.0.html. Also refer to Grafana documentation for Keycloack configuration: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/.
 
 Next you may import the workflows in the node-red instances. The JSON files provided can be imported as is.
 

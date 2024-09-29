@@ -1,0 +1,8 @@
+lighthouse: 
+  controller_timeout: 60
+  
+keycloak: 
+  server: http://host.docker.internal:9002
+  client_id: lighthouseClient
+  client_secret: changeToClientSecret
+  realm: icos

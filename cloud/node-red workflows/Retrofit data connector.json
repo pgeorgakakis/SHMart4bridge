@@ -1,0 +1,242 @@
+[
+    {
+        "id": "cce7ab6ac6fa71a2",
+        "type": "tab",
+        "label": "Flow 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b501d788c9b27542",
+        "type": "mysql",
+        "z": "cce7ab6ac6fa71a2",
+        "mydb": "d35490982173d68d",
+        "name": "Load Retrofit Interventions from database",
+        "x": 1020,
+        "y": 140,
+        "wires": [
+            [
+                "87c8dcd7f8ecc17e"
+            ]
+        ]
+    },
+    {
+        "id": "f8fda2f0c5ed5eeb",
+        "type": "postgresql",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Store new retrofit",
+        "query": "INSERT INTO retrofits (external_id, description, date) VALUES ($1, $2, $3)",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1430,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "70fa4e31950bb226",
+        "type": "postgresql",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Check if value exists",
+        "query": "SELECT COUNT(*) FROM retrofits where external_id = $1;",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 540,
+        "y": 300,
+        "wires": [
+            [
+                "b0fda9bb46725c66"
+            ]
+        ]
+    },
+    {
+        "id": "64be2d6733fa1b96",
+        "type": "inject",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Every hour",
+        "props": [],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 170,
+        "y": 140,
+        "wires": [
+            [
+                "9a19d40104553669"
+            ]
+        ]
+    },
+    {
+        "id": "87c8dcd7f8ecc17e",
+        "type": "split",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 1270,
+        "y": 140,
+        "wires": [
+            [
+                "c96768887df83e1a"
+            ]
+        ]
+    },
+    {
+        "id": "b0fda9bb46725c66",
+        "type": "switch",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "If not exists",
+        "property": "payload[0].count",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 770,
+        "y": 300,
+        "wires": [
+            [
+                "d8e033bca517a127"
+            ]
+        ]
+    },
+    {
+        "id": "c96768887df83e1a",
+        "type": "function",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Convertion for query",
+        "func": "msg.params = [msg.payload.id]\nmsg.params2 = [msg.payload.id, msg.payload.description, msg.payload.date]\nmsg.payload = null;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 300,
+        "wires": [
+            [
+                "70fa4e31950bb226"
+            ]
+        ]
+    },
+    {
+        "id": "d8e033bca517a127",
+        "type": "change",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Change values for persistence",
+        "rules": [
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "msg",
+                "to": "params2",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1050,
+        "y": 300,
+        "wires": [
+            [
+                "f8fda2f0c5ed5eeb"
+            ]
+        ]
+    },
+    {
+        "id": "9a19d40104553669",
+        "type": "postgresql",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Check if value exists",
+        "query": "SELECT MAX(external_id) FROM retrofits;",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 380,
+        "y": 140,
+        "wires": [
+            [
+                "e2ef9fbffa8ee836"
+            ]
+        ]
+    },
+    {
+        "id": "e2ef9fbffa8ee836",
+        "type": "function",
+        "z": "cce7ab6ac6fa71a2",
+        "name": "Prepare MySQL query",
+        "func": "if(msg.payload.length > 0)\n    msg.topic = \"select * FROM retrofits where id > \" + msg.payload[0].max;\nelse\n    msg.topic = \"select * FROM retrofits\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 140,
+        "wires": [
+            [
+                "b501d788c9b27542"
+            ]
+        ]
+    },
+    {
+        "id": "d35490982173d68d",
+        "type": "MySQLdatabase",
+        "name": "Retrofit Interventions database",
+        "host": "host.docker.internal",
+        "port": "3306",
+        "db": "retrofit",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "196687882a5aac29",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "storage-data",
+        "hostFieldType": "str",
+        "port": "5432",
+        "portFieldType": "num",
+        "database": "sensor-data",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": "10",
+        "maxFieldType": "num",
+        "idle": "1000",
+        "idleFieldType": "num",
+        "connectionTimeout": "10000",
+        "connectionTimeoutFieldType": "num",
+        "user": "root",
+        "userFieldType": "str",
+        "password": "root",
+        "passwordFieldType": "str"
+    }
+]

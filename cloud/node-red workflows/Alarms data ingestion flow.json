@@ -1,0 +1,349 @@
+[
+    {
+        "id": "50c608c4f8b40b57",
+        "type": "tab",
+        "label": "Flow 6",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "6842569e36205673",
+        "type": "mqtt in",
+        "z": "50c608c4f8b40b57",
+        "name": "",
+        "topic": "alarms/sensor/#",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "0278f1f78a45322b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 540,
+        "y": 160,
+        "wires": [
+            [
+                "9038dc39f1fa666a"
+            ]
+        ]
+    },
+    {
+        "id": "9038dc39f1fa666a",
+        "type": "function",
+        "z": "50c608c4f8b40b57",
+        "name": "Conver JSON for DB consumption",
+        "func": "var value = msg.payload.value;\nvar date = msg.payload.date;\nvar sensor = msg.payload.sensor;\nmsg.table = \"alarms\";\nmsg.params2 = [\n    sensor,\n    value,\n    date\n];\nmsg.params = [\n    msg.table\n];\nmsg.payload = null; \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 340,
+        "wires": [
+            [
+                "e584c466b454492b"
+            ]
+        ]
+    },
+    {
+        "id": "6791c0fac63d941c",
+        "type": "switch",
+        "z": "50c608c4f8b40b57",
+        "name": "Table not exists",
+        "property": "payload[0].exists",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 700,
+        "y": 640,
+        "wires": [
+            [
+                "719727899542a9cc",
+                "9a694d6193412c27"
+            ]
+        ]
+    },
+    {
+        "id": "5bb44afb6ae6b2b7",
+        "type": "postgresql",
+        "z": "50c608c4f8b40b57",
+        "name": "Find if table exists",
+        "query": "SELECT EXISTS (\n   SELECT FROM information_schema.tables \n   WHERE  table_schema = 'sensor-data'\n   AND    table_name   = $1\n   );",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1530,
+        "y": 340,
+        "wires": [
+            [
+                "6791c0fac63d941c",
+                "4407c764f53d5acc"
+            ]
+        ]
+    },
+    {
+        "id": "719727899542a9cc",
+        "type": "debug",
+        "z": "50c608c4f8b40b57",
+        "name": "Debug table not exists",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "259b59bc218c0e89",
+        "type": "postgresql",
+        "z": "50c608c4f8b40b57",
+        "name": "Create table",
+        "query": "CREATE TABLE IF NOT EXISTS {{{msg.table}}} (\n   id serial PRIMARY KEY,\n   sensor varchar(1000),\n   data numeric,\n   created_at TIMESTAMP WITH TIME ZONE\n);",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1430,
+        "y": 640,
+        "wires": [
+            [
+                "39c9278b11b3907d"
+            ]
+        ]
+    },
+    {
+        "id": "9a694d6193412c27",
+        "type": "change",
+        "z": "50c608c4f8b40b57",
+        "name": "Copy in msg from context the table name",
+        "rules": [
+            {
+                "t": "set",
+                "p": "table",
+                "pt": "msg",
+                "to": "params[0]",
+                "tot": "flow",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "msg",
+                "to": "foo",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1020,
+        "y": 640,
+        "wires": [
+            [
+                "259b59bc218c0e89"
+            ]
+        ]
+    },
+    {
+        "id": "4407c764f53d5acc",
+        "type": "switch",
+        "z": "50c608c4f8b40b57",
+        "name": "Table exists",
+        "property": "payload[0].exists",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 670,
+        "y": 840,
+        "wires": [
+            [
+                "39c9278b11b3907d"
+            ]
+        ]
+    },
+    {
+        "id": "39c9278b11b3907d",
+        "type": "change",
+        "z": "50c608c4f8b40b57",
+        "name": "Copy in msg from context the table name",
+        "rules": [
+            {
+                "t": "set",
+                "p": "table",
+                "pt": "msg",
+                "to": "params[0]",
+                "tot": "flow",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "msg",
+                "to": "params2",
+                "tot": "flow",
+                "dc": true
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 960,
+        "y": 840,
+        "wires": [
+            [
+                "b322f2bd4e00e378"
+            ]
+        ]
+    },
+    {
+        "id": "b322f2bd4e00e378",
+        "type": "postgresql",
+        "z": "50c608c4f8b40b57",
+        "name": "Save data",
+        "query": "INSERT INTO alarms (sensor, data, created_at) VALUES ($1, $2, $3)",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1330,
+        "y": 840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e0389c15d555e712",
+        "type": "debug",
+        "z": "50c608c4f8b40b57",
+        "name": "Debug value paramaters for query",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "params",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1420,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "e584c466b454492b",
+        "type": "change",
+        "z": "50c608c4f8b40b57",
+        "name": "Set value paramaters for query",
+        "rules": [
+            {
+                "t": "set",
+                "p": "params2",
+                "pt": "flow",
+                "to": "params2",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "flow",
+                "to": "params",
+                "tot": "msg",
+                "dc": true
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1130,
+        "y": 340,
+        "wires": [
+            [
+                "5bb44afb6ae6b2b7",
+                "e0389c15d555e712"
+            ]
+        ]
+    },
+    {
+        "id": "0278f1f78a45322b",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "host.docker.internal",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "196687882a5aac29",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "storage-data",
+        "hostFieldType": "str",
+        "port": "5432",
+        "portFieldType": "num",
+        "database": "sensor-data",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": "10",
+        "maxFieldType": "num",
+        "idle": "1000",
+        "idleFieldType": "num",
+        "connectionTimeout": "10000",
+        "connectionTimeoutFieldType": "num",
+        "user": "root",
+        "userFieldType": "str",
+        "password": "root",
+        "passwordFieldType": "str"
+    }
+]

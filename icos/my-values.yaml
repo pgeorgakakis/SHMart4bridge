@@ -1,0 +1,32 @@
+global:
+  icos:
+    agentId: icos-smh4b-edge-agent
+    controllerHost: host.docker.internal
+    iam:
+      publicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4iobXKCpE3Jpl8gFDoYykN9OqJC4G0mz6nd1tZxLJAbwQR1o1w3EevqOjmgWTKDGVGdp81+feXLvHdjUeXmXxRv7gBDkjNUinXFJl33l3UN6P7qQnCSEHPiugoHFYWnbyu3MwCg0sqr39EymQZOERV7nJDXPx3QQBda1nIp7kwC5gYXvJgPvrApGiQGJqYiIghtT9Nxv8d658G3yTr6ZPavZeg/sOTw4mpl+OMOJmH70zyTN182IlE5NjndK8pn31JUVfFKapm2LSZ3y7Kh6tIl3Sj2ApIba0HnQ5g1sEeKCLv5ZN+7eEj9P8+uRqomp+K0HbL7uSJ+Ir9XgfESBDQIDAQAB
+      realm: icos
+      baseUrl: http://host.docker.internal:9002
+    lighthouse:
+      baseUrl: http://host.docker.internal:1223
+
+    # needed only if ocm-descriptor: true
+    ocmDM:
+      iamClientId: shellBackend
+      iamClientSecret: Davzi7pNGF6w9qHM0hTEmpaEkzoojhs3
+
+    # needed only if nuvla.enabled: true
+    nuvlaDM:
+      iamClientId: 
+      iamClientSecret: 
+      nuvlaApiKey: 
+      nuvlaApiSecret: 
+
+
+# Configuration specific for OCM. Include only if the orchestrator is OCM
+ocm-descriptor:
+  enabled: true
+
+
+# Configuration specific for Nuvla. Include only if the orchestrator is Nuvla
+nuvla:
+  enabled: false

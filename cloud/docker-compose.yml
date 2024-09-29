@@ -1,0 +1,111 @@
+version: '3.3'
+services:
+  auth-server-new:
+    image: quay.io/keycloak/keycloak:24.0
+    command: start-dev
+    networks:
+      - backend
+    ports:
+      - 9002:8080
+    environment:
+      KC_HOSTNAME_PORT: 9002
+      KEYCLOAK_ADMIN: admin 
+      KEYCLOAK_ADMIN_PASSWORD: admin-icos-123!
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_FEATURES: token-exchange,admin-fine-grained-authz,token-exchange
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://storage-kc-new:5432/kc-24
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: root
+    depends_on:
+      - storage-kc-new
+
+  storage-kc-new:
+    image: postgres
+    restart: always
+    networks:
+      backend:
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: kc-24
+      TZ: 'GMT+0'
+      PGTZ: 'GMT+0'      
+    volumes:
+      - ./postgres-data-auth-24:/var/lib/postgresql/data
+    ports:
+      - 54033:5432
+
+  storage-data:
+    image: postgres
+    restart: always
+    networks:
+      backend:
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: sensor-data
+      TZ: 'GMT+0'
+      PGTZ: 'GMT+0'      
+    volumes:
+      - ./postgres-data-sensor:/var/lib/postgresql/data
+    ports:
+      - 9535:5432
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3001:3000'
+    environment:
+      GF_LOG_LEVEL: trace
+      GF_AUTH_GENERIC_OAUTH_NAME: OAuth
+      GF_AUTH_GENERIC_OAUTH_ENABLED: true
+      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: true
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: grafana-oauth
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: Za5lIOkjZxbVPRKGhMVC8kJd06X1NoAv
+      GF_AUTH_GENERIC_OAUTH_SCOPES: openid email profile offline_access roles
+      GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_NAME: email
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: http://host.docker.internal:9002/realms/icos/protocol/openid-connect/auth
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: http://host.docker.internal:9002/realms/icos/protocol/openid-connect/token
+      GF_AUTH_GENERIC_OAUTH_API_URL: http://host.docker.internal:9002/realms/icos/protocol/openid-connect/userinfo
+      GF_AUTH_GENERIC_OAUTH_TLS_SKIP_VERIFY_INSECURE: true
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_NAME: "email"
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "contains(realm_access.roles[*], 'admin') && 'GrafanaAdmin' || contains(realm_access.roles[*], 'editor') && 'Editor' || 'Viewer'"
+      GF_FEATURE_TOGGLES_ENABLE: featureToggleAdminPage, regressionTransformation
+      GF_FEATURE_MANAGEMENT_ALLOW_EDITING: true
+
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    restart: always
+    networks:
+      - backend
+
+  nodered:
+    image: nodered/node-red
+    ports:
+      - '2012:1880'
+      - '5001:5001'
+    links:
+      - redis
+    volumes:
+      - ./nodered-data:/data
+    restart: always
+    networks:
+      - backend
+
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: always
+    volumes:
+      - ./mosquitto:/mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    networks:
+      - backend
+
+networks:
+  backend:

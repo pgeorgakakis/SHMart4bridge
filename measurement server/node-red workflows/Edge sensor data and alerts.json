@@ -1,0 +1,314 @@
+[
+    {
+        "id": "3fd998d69f5b3136",
+        "type": "tab",
+        "label": "Flow 5",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a7a789bcb1274c1d",
+        "type": "file in",
+        "z": "3fd998d69f5b3136",
+        "name": "",
+        "filename": "payload",
+        "filenameType": "msg",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 740,
+        "y": 320,
+        "wires": [
+            [
+                "535cd0df53c1cfc6",
+                "2fe14a801bfebcd9"
+            ]
+        ]
+    },
+    {
+        "id": "4491017778d9788d",
+        "type": "watch-directory",
+        "z": "3fd998d69f5b3136",
+        "folder": "/za-files",
+        "recursive": 0,
+        "typeEvent": "create",
+        "ignoreInitial": false,
+        "ignoredFiles": "",
+        "ignoredFilesType": "re",
+        "name": "File watcher",
+        "x": 190,
+        "y": 320,
+        "wires": [
+            [
+                "3140fa4c97112d3e"
+            ]
+        ]
+    },
+    {
+        "id": "3140fa4c97112d3e",
+        "type": "change",
+        "z": "3fd998d69f5b3136",
+        "name": "Add file name to new property",
+        "rules": [
+            {
+                "t": "set",
+                "p": "filename",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "counter",
+                "pt": "flow",
+                "to": "foo",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 320,
+        "wires": [
+            [
+                "a7a789bcb1274c1d"
+            ]
+        ]
+    },
+    {
+        "id": "f64203c334a38ea3",
+        "type": "mqtt out",
+        "z": "3fd998d69f5b3136",
+        "name": "",
+        "topic": "",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "0278f1f78a45322b",
+        "x": 1510,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "352f85d5a294afe8",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "Check for alerts",
+        "func": "var value = msg.payload.value;\nvar date = msg.payload.date;\nvar topic =  msg.topic;\nmsg.alarm = false;\n\nvar threshold_ds06 = 6.7;\nvar threshold_ds22 = 4.7;\nvar threshold_ds21 = 0.72;\nvar threshold_ds23 = 5.9;\nvar threshold_ds11 = 5.1;\nvar threshold_ds20 = 7.8;\n\nvar threshold_vw101 = 2750.0;\nvar threshold_vw102 = 2550.0;\nvar threshold_vw103 = 2200.0;\nvar threshold_vw104 = 3000.0;\nvar threshold_vw251 = 2600.0;\nvar threshold_vw252 = 2650.0;\nvar threshold_vw253 = 3100.0;\nvar threshold_vw254 =  3100.0;\n\nvar sensor = \"\";\n\nif(topic == \"sensor/ds06/volts\"){\n    sensor = \"ds06\";\n    if(value > threshold_ds06){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/ds22/volts\"){\n    sensor = \"ds22\";\n    if(value > threshold_ds22){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/ds21/volts\"){\n    sensor = \"ds21\";\n    if(value > threshold_ds21){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/ds23/volts\"){\n    sensor = \"ds23\";\n    if(value > threshold_ds23){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/ds11/volts\"){\n    sensor = \"ds11\";\n    if(value > threshold_ds11){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/ds20/volts\"){\n    sensor = \"ds20\";\n    if(value > threshold_ds20){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/vw101/hz\"){\n    sensor = \"vw101\";\n    if(value > threshold_vw101){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/vw102/hz\"){\n    sensor = \"vw102\";\n    if(value > threshold_vw102){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/vw103/hz\"){\n    sensor = \"vw103\";\n    if(value > threshold_vw103){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor/vw104/hz\"){\n    sensor = \"vw104\";\n    if(value > threshold_vw104){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor_vw251_hz\"){\n    sensor = \"vw251\";\n    if(value > threshold_vw251){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor_vw252_hz\"){\n    sensor = \"vw252\";\n    if(value > threshold_vw252){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor_vw253_hz\"){\n    sensor = \"vw253\";\n    if(value > threshold_vw253){\n        msg.alarm = true;\n    }\n} else if(topic == \"sensor_vw254_hz\"){\n    sensor = \"vw254\";\n    if(value > threshold_vw254){\n        msg.alarm = true;\n    }\n}\nmsg.table = \"alarms\";\nmsg.params2 = [\n    sensor,\n    value,\n    date\n];\nmsg.params = [\n    msg.table\n];\nmsg.payload = null; \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 460,
+        "wires": [
+            [
+                "ce18fc40e8e5937d"
+            ]
+        ]
+    },
+    {
+        "id": "ce18fc40e8e5937d",
+        "type": "switch",
+        "z": "3fd998d69f5b3136",
+        "name": "Check if msg.alarm is true",
+        "property": "alarm",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 970,
+        "y": 460,
+        "wires": [
+            [
+                "db27e7288a8e1373"
+            ]
+        ]
+    },
+    {
+        "id": "db27e7288a8e1373",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "Post alarm in MQTT",
+        "func": "msg.topic = \"alarms/\" + msg.topic;\nmsg.payload = { \"sensor\": msg.params2[0], \"value\": msg.params2[1], \"date\": msg.params2[2]};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 460,
+        "wires": [
+            [
+                "f64203c334a38ea3"
+            ]
+        ]
+    },
+    {
+        "id": "3367e45f.cc981c",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "++",
+        "func": "if ( (msg.i += 1) < msg.items.length ) return msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 80,
+        "wires": [
+            [
+                "116d5bb3.ee92a4"
+            ]
+        ]
+    },
+    {
+        "id": "116d5bb3.ee92a4",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "for each item",
+        "func": "if( msg.i     == undefined ) msg.i = 0;\nif( msg.items == undefined ) msg.items = msg.payload;\n\nmsg.payload = msg.items[ msg.i ];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 180,
+        "wires": [
+            [
+                "3367e45f.cc981c",
+                "6b196e48b394bfed"
+            ]
+        ]
+    },
+    {
+        "id": "6b196e48b394bfed",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "Convert for MQTT",
+        "func": "msg = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1500,
+        "y": 260,
+        "wires": [
+            [
+                "f64203c334a38ea3",
+                "352f85d5a294afe8"
+            ]
+        ]
+    },
+    {
+        "id": "535cd0df53c1cfc6",
+        "type": "function",
+        "z": "3fd998d69f5b3136",
+        "name": "Convert to JSON",
+        "func": "\nvar line = msg.payload;\nif(flow.counter == 0 || flow.counter == undefined){\n    flow.headers = line.split(\",\");\n    flow.counter = 1;\n    msg.isHeader = true;\n} else {\n    var values = line.split(\",\");\n    var zaDate = new Date(values[0]);\n    msg.items = [];\n    for(var i=1; i < values.length; i++){\n        var topic = msg.filename;\n        topic = topic.replace(\"/za-files/\", \"\");\n        topic = topic.replace(\".txt\", \"\");\n        var header = flow.headers[i].replace(/\\r?\\n|\\r/g, \"\");\n        var value = values[i];\n        if(topic.startsWith(\"ds\") && i > 0)\n            topic = \"sensor/\" + header + \"/volts\";\n        else if(topic.startsWith(\"vw\") && i > 0)\n            topic = \"sensor/\" + header + \"/hz\";\n        else if(topic.startsWith(\"sx\") && i > 0)\n            topic = \"sensor/\" + header + \"/mm\";\n        else if(i > 0)\n            topic = \"sensor/\" + header ;\n\n        \n        msg.items.push({ \"topic\": topic, \"payload\": { \"value\": value, \"date\": zaDate.toISOString() } });\n        flow.counter++;\n        \n    }\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 280,
+        "wires": [
+            [
+                "116d5bb3.ee92a4",
+                "2ee4cec4f523b502"
+            ]
+        ]
+    },
+    {
+        "id": "2fe14a801bfebcd9",
+        "type": "debug",
+        "z": "3fd998d69f5b3136",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "2ee4cec4f523b502",
+        "type": "debug",
+        "z": "3fd998d69f5b3136",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "0278f1f78a45322b",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "host.docker.internal",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

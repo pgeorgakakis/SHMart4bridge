@@ -1,0 +1,277 @@
+[
+    {
+        "id": "eb32018ce8cc19d5",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9e425aa17d9f218f",
+        "type": "mqtt in",
+        "z": "eb32018ce8cc19d5",
+        "name": "",
+        "topic": "sensor/#",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "0278f1f78a45322b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 320,
+        "y": 460,
+        "wires": [
+            [
+                "e87cbd7e1750fe7e"
+            ]
+        ]
+    },
+    {
+        "id": "e87cbd7e1750fe7e",
+        "type": "function",
+        "z": "eb32018ce8cc19d5",
+        "name": "Convert to object with null payload and params parameter with values",
+        "func": "var value = msg.payload.value;\nvar date = msg.payload.date;\nvar t =  msg.topic.replaceAll(\"/\", \"_\");\nmsg.table = t;\nmsg.params2 = [\n    value,\n    date\n];\nmsg.params = [\n    t\n];\nmsg.payload = null; \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 460,
+        "wires": [
+            [
+                "578f651f408d8d0e"
+            ]
+        ]
+    },
+    {
+        "id": "2fd21881b03d57d2",
+        "type": "switch",
+        "z": "eb32018ce8cc19d5",
+        "name": "Table not exists",
+        "property": "payload[0].exists",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 320,
+        "y": 700,
+        "wires": [
+            [
+                "8567c049b6e0c470"
+            ]
+        ]
+    },
+    {
+        "id": "578f651f408d8d0e",
+        "type": "postgresql",
+        "z": "eb32018ce8cc19d5",
+        "name": "Find if table exists",
+        "query": "SELECT EXISTS (\n   SELECT FROM information_schema.tables \n   WHERE  table_schema = 'public'\n   AND    table_name   = $1\n   );",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1250,
+        "y": 460,
+        "wires": [
+            [
+                "2fd21881b03d57d2",
+                "ab93c4675ce32a90"
+            ]
+        ]
+    },
+    {
+        "id": "7293e912020d2b2a",
+        "type": "postgresql",
+        "z": "eb32018ce8cc19d5",
+        "name": "Postgres local storage for data",
+        "query": "CREATE TABLE IF NOT EXISTS {{{msg.table}}} (\n   id serial PRIMARY KEY,\n   data numeric,\n   created_at TIMESTAMP WITH TIME ZONE\n);",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1110,
+        "y": 700,
+        "wires": [
+            [
+                "ab93c4675ce32a90"
+            ]
+        ]
+    },
+    {
+        "id": "8567c049b6e0c470",
+        "type": "change",
+        "z": "eb32018ce8cc19d5",
+        "name": "Copy in msg from context the table name",
+        "rules": [
+            {
+                "t": "set",
+                "p": "table",
+                "pt": "msg",
+                "to": "params[0]",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "msg",
+                "to": "foo",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 640,
+        "y": 700,
+        "wires": [
+            [
+                "7293e912020d2b2a"
+            ]
+        ]
+    },
+    {
+        "id": "ab93c4675ce32a90",
+        "type": "switch",
+        "z": "eb32018ce8cc19d5",
+        "name": "Table exists",
+        "property": "payload[0].exists",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 290,
+        "y": 900,
+        "wires": [
+            [
+                "5d766a051c4fdabb"
+            ]
+        ]
+    },
+    {
+        "id": "5d766a051c4fdabb",
+        "type": "change",
+        "z": "eb32018ce8cc19d5",
+        "name": "Copy in msg from context the table name",
+        "rules": [
+            {
+                "t": "set",
+                "p": "table",
+                "pt": "msg",
+                "to": "params[0]",
+                "tot": "msg",
+                "dc": true
+            },
+            {
+                "t": "set",
+                "p": "params",
+                "pt": "msg",
+                "to": "params2",
+                "tot": "msg",
+                "dc": true
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 900,
+        "wires": [
+            [
+                "c0b041d4da674d23"
+            ]
+        ]
+    },
+    {
+        "id": "c0b041d4da674d23",
+        "type": "postgresql",
+        "z": "eb32018ce8cc19d5",
+        "name": "Save data",
+        "query": "INSERT INTO {{{msg.table}}} (data, created_at) VALUES ($1, $2)",
+        "postgreSQLConfig": "196687882a5aac29",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 990,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0278f1f78a45322b",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "host.docker.internal",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "196687882a5aac29",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "storage-data",
+        "hostFieldType": "str",
+        "port": "5432",
+        "portFieldType": "num",
+        "database": "sensor-data",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": "10",
+        "maxFieldType": "num",
+        "idle": "1000",
+        "idleFieldType": "num",
+        "connectionTimeout": "10000",
+        "connectionTimeoutFieldType": "num",
+        "user": "root",
+        "userFieldType": "str",
+        "password": "root",
+        "passwordFieldType": "str"
+    }
+]

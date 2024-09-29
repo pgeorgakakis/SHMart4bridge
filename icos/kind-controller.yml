@@ -1,0 +1,23 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: kind-icos-controller
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 32500
+    hostPort: 32500
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+  - containerPort: 32300
+    hostPort: 32300
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+  - containerPort: 32103
+    hostPort: 32103
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+  - containerPort: 32104
+    hostPort: 32104
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+- role: worker

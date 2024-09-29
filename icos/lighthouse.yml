@@ -1,0 +1,19 @@
+lighthouse: 
+  controller_timeout: 60
+  
+keycloak: 
+  server: http://host.docker.internal:9002
+  client_id: matchmaker
+  client_secret: uDL3dm4zn6YiMVv4zxYQueOivZr63XfY
+  realm: icos
+
+components: 
+  job_manager: 
+    server: https://ocm-hub.bull1.ari-imet.eu
+    path_jobs: /jobmanager/jobs
+    path_jobgroups: /jobmanager/groups
+    path_policies: /jobmanager/policies
+    # path_jobs_create: /jobmanager/jobs/create
+  aggregator: 
+    server: http://127.0.0.1:8080
+    path: /

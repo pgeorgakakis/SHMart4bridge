@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  nodered:
+    image: nodered/node-red
+    ports:
+      - '2012:1880'
+      - '5001:5001'
+    links:
+      - redis
+    volumes:
+      - ./nodered-data:/data
+    restart: always

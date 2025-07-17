@@ -1,0 +1,83 @@
+name: shmart4bridges
+description: "edge deployment for gateway access"
+components:
+  - name: node-red
+    type: kubernetes
+    manifests:
+      - name: node-red
+      - name: node-red-service
+    requirements:
+      nodelabel: 
+        key: color
+        values:
+          - red
+policies:
+  - type: node-resource-usage
+    cpu_threshold_perc: 0.65
+    memory_threshold_perc: 0.6
+    exclude_app_resources: false
+
+manifests:
+  - name: node-red
+    manifest:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        labels:
+          app: node-red
+        name: node-red
+        namespace: icos-system
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: node-red
+        strategy:
+          type: Recreate
+        template:
+          metadata:
+            annotations:
+              telemetry.icos.eu/interval: 120s
+              telemetry.icos.eu/port: "1880"
+              telemetry.icos.eu/path: /metrics
+              telemetry.icos.eu/scheme: http
+              telemetry.icos.eu/scrape: "true" 
+              telemetry.icos.eu/timeout: 10s
+            labels:
+              app: node-red
+          spec:
+            containers:
+              - env:
+                  - name: TZ
+                    value: Europe/London
+                  - name: PGID
+                    value: "1000"
+                  - name: PUID
+                    value: "1000"
+                  - name: PROMETHEUS_COLLECT_DEFAULT_METRICS
+                    value: "true"
+                image: kchrysompolis/icos-node-red-priv:v4
+                imagePullPolicy: Always
+                name: node-red
+                ports:
+                  - containerPort: 1880
+                    protocol: TCP
+            imagePullSecrets:
+              - name: icos-registry-secret
+  - name: node-red-service
+    manifest: 
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: node-red-service
+        namespace: icos-system
+      spec:
+        type: NodePort
+        ports:
+          - name: web
+            nodePort: 31880      
+            port: 1880
+            targetPort: 1880
+            protocol: TCP
+        selector:
+          app: node-red

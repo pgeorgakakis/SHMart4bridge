@@ -27,6 +27,12 @@ Building and running with Docker Compose. In the respective directories execute 
 docker compose up -d --build
 ```
 
+After Building the Docker the image it can be used in combiantion with the Application Model yaml file for deployemnt in ICOS using the ICOS Shell. The command for deployemnt is:
+
+```
+icos-shell --config=config_client.yml create deployment --file app_descriptor.yaml
+```
+
 ## Configuration
 
 The first step is to configure Keycloak. Please refer to the documentation at https://www.keycloak.org/archive/documentation-24.0.html. Also refer to Grafana documentation for Keycloack configuration: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/keycloak/.
